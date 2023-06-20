@@ -1,4 +1,5 @@
 import pypdf as PDF
+#import rotate
 
 PAPER_SIZES = {
     "A0":[2384,3370],
@@ -16,50 +17,44 @@ PAPER_SIZES = {
     "A8":[147,210],
     "C4":[649,918],
 }
-
-def is_rotated(width,heigth):
-    if width > heigth:
+def is_rotated(width, height):
+    if width > height:
         return True
     else:
         return False
-    
 
 def verify_size(page):
     width = page.mediabox.width
     height = page.mediabox.height
-    print("ancho: ",width, "alto: ",height)
     for paper_size, dimensions in PAPER_SIZES.items():
-        if(is_rotated(width,height)):
-            if abs(dimensions[0]-width) < 20 and abs(dimensions[1]-height)< 200:
-                print(dimensions)
-                return dimensions
-        else:
-            if abs(dimensions[0]-width) < 200 and abs(dimensions[1]-height)< 20:
-                print(dimensions)
-                return dimensions
+        if abs(dimensions[0]-width) < 200 and abs(dimensions[1]-height) < 30:
+            return dimensions
+        if abs(dimensions[0]-width) < 30 and abs(dimensions[1]-height) < 200:
+            return dimensions
     
-    print("default")
-    return [612,791]
+    return [791,612]
     
 def cortar_contenido(path):
     
+    #rotate.rotar(path)
     document = PDF.PdfReader(path)
     writer = PDF.PdfWriter()
     pages = document.pages
 
     for page in pages:
-
-        page_dimensions = verify_size(page)
-        print("dimensiones verificadas: ", page_dimensions)
-        if is_rotated(page.mediabox.width, page.mediabox.height):
+        page_dimensions = verify_size(page)  
+        
+        if(is_rotated(page.mediabox.width, page.mediabox.height)):
+            op = PDF.Transformation().translate(tx=0,ty=-200)
+            page.add_transformation(op)
             blank_page = writer.add_blank_page(*page_dimensions)
             blank_page.merge_page(page)
+        
         else:
-            blank_page = writer.add_blank_page(*page_dimensions)        
+            blank_page = writer.add_blank_page(*page_dimensions)
             blank_page.merge_page(page)
 
-    with open("3460 ED INFR JUA.pdf", "wb") as fp:
+    with open("3460 ED INFR JUAREZ.pdf", "wb") as fp:
         writer.write(fp)
-
 
 cortar_contenido(r"C:\Users\USER\Downloads\3460 ED INFR JUA\04.pdf")
