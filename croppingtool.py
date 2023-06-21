@@ -1,5 +1,6 @@
 import pypdf as PDF
-#import rotate
+import glob
+import os
 
 PAPER_SIZES = {
     "A0":[2384,3370],
@@ -39,7 +40,6 @@ def verify_size(page):
     
 def cortar_contenido(path):
     
-    #rotate.rotar(path)
     document = PDF.PdfReader(path)
     writer = PDF.PdfWriter()
     pages = document.pages
@@ -59,7 +59,12 @@ def cortar_contenido(path):
             blank_page = writer.add_blank_page(*page_dimensions)
             blank_page.merge_page(page)
 
-    with open("3460 ED INFR JUAREZ.pdf", "wb") as fp:
+    with open(path, "wb") as fp:
         writer.write(fp)
+    return writer
 
-cortar_contenido(r"C:\Users\USER\Downloads\3460 ED INFR JUA\04.pdf")
+def modificar_en_masa(path):
+    for filename in glob.glob(f"{path}/**/*.pdf",recursive=True):
+        cortar_contenido(filename)
+        
+modificar_en_masa(r"C:\Users\USER\Downloads\3460 ED INFR JUA")
