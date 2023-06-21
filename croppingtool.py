@@ -27,12 +27,15 @@ def verify_size(page):
     width = page.mediabox.width
     height = page.mediabox.height
     for paper_size, dimensions in PAPER_SIZES.items():
-        if abs(dimensions[0]-width) < 200 and abs(dimensions[1]-height) < 30:
-            return dimensions
-        if abs(dimensions[0]-width) < 30 and abs(dimensions[1]-height) < 200:
-            return dimensions
+        if(is_rotated(width,height)):
+            if abs(dimensions[0]-width) < 20 and abs(dimensions[1]-height) < 200:
+                return dimensions
+        else:
+            if abs(dimensions[0]-width) < 200 and abs(dimensions[1]-height) < 20:
+                return dimensions
     
-    return [791,612]
+    print("default")
+    return [612,791]
     
 def cortar_contenido(path):
     
@@ -42,12 +45,14 @@ def cortar_contenido(path):
     pages = document.pages
 
     for page in pages:
-        page_dimensions = verify_size(page)  
+        
+        page_dimensions = verify_size(page)
+        delta_ty = page.mediabox.height - page_dimensions[1]
         
         if(is_rotated(page.mediabox.width, page.mediabox.height)):
-            op = PDF.Transformation().translate(tx=0,ty=-200)
-            page.add_transformation(op)
             blank_page = writer.add_blank_page(*page_dimensions)
+            op = PDF.Transformation().translate(tx=0,ty=-delta_ty)
+            page.add_transformation(op)
             blank_page.merge_page(page)
         
         else:
